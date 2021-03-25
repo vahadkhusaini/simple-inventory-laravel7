@@ -90,7 +90,12 @@ class BarangController extends Controller
      */
     public function edit($id)
     {
-        $data = Barang::find($id);
+        $barang = Barang::find($id);
+
+        $data = [
+            'barang' => $barang,
+            'supplier' => $barang->supplier
+        ];
 
         return Response::json($data);
     }
@@ -126,7 +131,7 @@ class BarangController extends Controller
     public function getSupplier(Request $request)
     {
         if(!$request->search){
-            $data = DB::table('supplier')->select("supplier_id", "nama_supplier")->latest('supplier_id')->get();
+            $data = DB::table('supplier')->select("id", "supplier_id", "nama_supplier")->latest('supplier_id')->get();
 
             return Response::json($data);
         }else{

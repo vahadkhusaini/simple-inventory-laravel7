@@ -14,4 +14,9 @@ class Barang extends Model
         'harga_jual',
         'harga_beli',
         'supplier_id'];
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
 }

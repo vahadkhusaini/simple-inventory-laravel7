@@ -148,15 +148,22 @@
     	},
     	dataType: 'json',
     	success: function (pl) {
-    	    $("input[name='id']").val(pl.id);
-    	    $("input[name='barcode']").val(pl.barcode);
-    	    $("input[name='nama_barang']").val(pl.nama_barang);
-    	    $("input[name='harga_beli']").val(pl.harga_beli);
-    	    $("input[name='harga_jual']").val(pl.harga_jual);
-    	    $('#supplier').val(pl.supplier_id);
-            $('#supplier').select2().trigger('change');
+    	    $("input[name='id']").val(pl.barang.id);
+    	    $("input[name='barcode']").val(pl.barang.barcode);
+    	    $("input[name='nama_barang']").val(pl.barang.nama_barang);
+    	    $("input[name='harga_beli']").val(pl.barang.harga_beli);
+    	    $("input[name='harga_jual']").val(pl.barang.harga_jual);
+            var data = {
+                id: pl.barang.id,
+                text: pl.supplier.nama_supplier
+            };
 
+            var newOption = new Option(data.text, data.id, false, false);
+            $('#supplier').append(newOption).trigger('change');
+
+            select_supplier();
     	    $('#modal').modal('show');
+
     	    validate();
     	}
     	});
@@ -263,33 +270,39 @@
         let _token = $('meta[name="csrf-token"]').attr('content');
 
         function select_supplier(){
-            $('.cari').select2({
+
+            $('#supplier').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Pilih Supplier',
                 ajax: {
-                url: "/barang/getSupplier",
-                type: "POST",
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                    _token: _token,
-                    search: params.term // search term
-                    };
-                },
-                processResults: function (data) {
-                    console.log("OK");
-                    return {
-                    results:  $.map(data, function (item) {
+                    url: "/barang/getSupplier",
+                    type: "POST",
+                    dataType: 'json',
+                    delay: 250, 
+                    data: function (params) {
                         return {
-                            text: item.nama_supplier,
-                            id: item.supplier_id
-                        }
-                    })
-                    };
+                        _token: _token,
+                        search: params.term // search term
+                        };
+
+                    },
+                    processResults: function (data) {
+                        console.log("OK");
+                        console.log($('#supplier').val());
+                        return {
+                        results:  $.map(data, function (item) {
+                            return {
+                                text: item.nama_supplier,
+                                id: item.id
+                            }
+                        })
+                        };
+                        
+                    },
+
+                    cache: true
                 },
-                cache: true
-                }
+                   
             });
         }
 
