@@ -288,7 +288,6 @@
                     },
                     processResults: function (data) {
                         console.log("OK");
-                        console.log($('#supplier').val());
                         return {
                         results:  $.map(data, function (item) {
                             return {
