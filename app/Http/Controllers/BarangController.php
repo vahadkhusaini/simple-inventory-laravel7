@@ -68,6 +68,7 @@ class BarangController extends Controller
         $output = [
             'message' => 'Data Berhasil disimpan'
         ];
+
         return Response::json($output);
     }
 
@@ -140,6 +141,25 @@ class BarangController extends Controller
             ->select("supplier_id", "nama_supplier")
             ->where('supplier_id','LIKE',"%$cari%")
             ->Orwhere('nama_supplier','LIKE',"%$cari%")
+            ->get();
+
+            return Response::json($data);
+            
+        }
+    }
+
+    public function getBarang(Request $request)
+    {
+        if(!$request->search){
+            $data = DB::table('barang')->select("id", "barang_id", "nama_barang")->latest('barang_id')->get();
+
+            return Response::json($data);
+        }else{
+            $cari = $request->search;
+            $data = DB::table('barang')
+            ->select("barang_id", "nama_barang")
+            ->where('barang_id','LIKE',"%$cari%")
+            ->Orwhere('nama_barang','LIKE',"%$cari%")
             ->get();
 
             return Response::json($data);

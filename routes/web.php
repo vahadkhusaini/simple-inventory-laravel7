@@ -27,5 +27,6 @@ Route::group(['middleware' => 'auth'], function(){
     Route::resource('barang', 'BarangController');
     Route::resource('pesanan', 'PesananController');
     Route::post('/supplier/insert','SupplierController@insert');
-    Route::post('/barang/getSupplier','BarangController@getSupplier')->name('get.supplier');
+    Route::post('/barang/getSupplier','BarangController@getSupplier');
+    Route::post('/barang/getBarang','BarangController@getBarang');
 });
