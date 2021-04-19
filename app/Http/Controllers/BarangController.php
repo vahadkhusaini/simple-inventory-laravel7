@@ -126,6 +126,7 @@ class BarangController extends Controller
         $output = [
             'message' => 'Data Barang Berhasil dihapus'
         ];
+
         return Response::json($output);
     }
 
@@ -165,5 +166,12 @@ class BarangController extends Controller
             return Response::json($data);
             
         }
+    }
+
+    public function getBarangById(Request $request)
+    {
+        $data = Barang::where('barang_id', $request->id)->first();
+
+        return Response::json($data);
     }
 }

@@ -1,6 +1,7 @@
 @extends('admin.main')
 @section('Pesanan', 'active')
 @section('content')
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -79,10 +80,11 @@
                                                 Barang
                                             </label>
                                             <div class="col-md-7">
+                                                <input type="hidden" name="id">
                                                 <div class="input-group">
                                                     <input type="text"
                                                         class="form-control"
-                                                        name="barang"
+                                                        name="nama_barang"
                                                         readonly
                                                         placeholder="Barang">
                                                     <div class="input-group-append">
@@ -161,7 +163,7 @@
                                     <div class="col-md-6 pl-4">
                                         <div class="form-group row pt-3">
                                             <input type="button"
-                                                id="add_to_cart_order"
+                                                id="add-to-cart"
                                                 class="btn btn-success mr-2"
                                                 value="TAMBAH">
                                             <button class="btn btn-warning">RESET</button>
@@ -172,18 +174,19 @@
                                     <div class="col-md-12">
                                         <div class="col-lg-12">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered table-hover table-striped">
+                                                <table id="cart-table" class="table table-bordered">
                                                     <thead>
-                                                        <tr class="info">
+                                                        <tr>
                                                             <th>No</th>
                                                             <th>Barcode</th>
                                                             <th>Nama Barang</th>
                                                             <th>Qty</th>
-                                                            <th>Satuan</th>
+                                                            <th>Harga</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody id="show_data_pemesanan">
+                                                    <tbody id="cart-item">
+                                                       
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -201,7 +204,6 @@
                     </form>
                 </div>
             </div>
-
         </div>
     </section>
 </div>
@@ -228,6 +230,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Kode Barang</th>
                                 <th>Barcode</th>
                                 <th>Nama Barang </th>
                                 <th>Harga Barang</th>
@@ -246,9 +249,30 @@
 
 @endsection
 
+@push('child-css')
+    <link rel="stylesheet" href="{{ asset('admin/plugins/flatpickr/package/dist/themes/airbnb.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/plugins/bootstrap4-editable/css/bootstrap-editable.css') }}">
+   
+@endpush
+
 @push('child-js')
+
+<script src="{{ asset('admin/plugins/flatpickr/package/dist/flatpickr.js') }}"></script>
+<script src="{{ asset('admin/plugins/bootstrap4-editable/js/bootstrap-editable.js') }}"></script>
 <script>
+    $(document).ready(function() {
+
     let _token = $('meta[name="csrf-token"]').attr('content');
+
+    $("input[name='tanggal']").flatpickr({
+          altInput: true,
+          altFormat: "d/m/Y",
+          dateFormat: "Y/m/d",
+          defaultDate: "today"
+        });
+
+
+    const tanggal = $( "input[name='tanggal']" ).val();
 
     $('#supplier').select2({
         theme: 'bootstrap4',
@@ -291,9 +315,15 @@
                 processing: true,
                 serverSide: true,
                 bDestroy: true,
+                createdRow: function( row, data, dataIndex ) {
+					 $( row )
+					 .addClass('barang')
+					 .attr('data-id', data.barang_id)
+				},
                 ajax: "{{ route('barang.index') }}",
                 columns: [
                     {data: 'DT_RowIndex', name: 'DT_RowIndex', searchable: false, orderable: false},
+                    {data: 'barang_id', name: 'barang_id'},
                     {data: 'barcode', name: 'barcode'},
                     {data: 'nama_barang', name: 'nama_barang'},
                     {data: 'harga_beli', name: 'harga_beli'},
@@ -301,38 +331,112 @@
             });
     })
 
-    // $('#barang').select2({
-    //     theme: 'bootstrap4',
-    //     placeholder: 'Pilih Barang',
-    //     ajax: {
-    //         url: "/barang/getBarang",
-    //         type: "POST",
-    //         dataType: 'json',
-    //         delay: 250,
-    //         data: function (params) {
-    //             return {
-    //                 _token: _token,
-    //                 search: params.term // search term
-    //             };
+    $('#add-to-cart').on('click', function(){
+        const id = $("input[name='id']").val();
+        const qty = $("input[name='jumlah']").val();
+        const harga = $("input[name='harga_barang']").val();
+        
+        $.ajax({
+                type: 'POST',
+                url: "{{ route('cart.add') }}",
+                data: {
+                    _token: _token,
+                    id: id,
+                    qty: qty,
+                    harga: harga
+                },
+                dataType: 'json',
+                success: function (data) {
+                    let no = 1;
+                    let html = "";
+                    $.each(data, function (index, item) {
+                        //console.log(item);
+                        
+                        html += `<tr>
+                                    <td>${no++}</td>
+                                    <td>${item.associatedModel.barcode}</td>
+                                    <td>${item.name}</td>
+                                    <td>
+                                        <a href="javascript:void(null)" class="edit-qty" data-type="text" data-pk="${item.id}" data-url="/cart/${item.id}/update" data-title="Masukkan Nilai">${item.quantity}</a>
+                                    </td>
+                                    <td>${item.price}</td>
+                                    <td><input type="button" data-rowid="${item.id}"
+                                        class="remove-cart btn-sm btn-danger" value="Remove">
+                                    </td>
+                                </tr>`;
 
-    //         },
-    //         processResults: function (data) {
+                    });
 
-    //             return {
-    //                 results: $.map(data, function (item) {
-    //                     return {
-    //                         text: item.nama_barang,
-    //                         id: item.id
-    //                     }
-    //                 })
-    //             };
+                    $('#cart-item').html(html);
+                   
+                }
+    	    });
+    })
 
-    //         },
+    $('.edit-qty').editable();
 
-    //         cache: true
-    //     },
+    $('#cart-table').on('click', '.remove-cart',function (){
+        const id = $(this).data('rowid');
+        console.log(id);
+        
+        $.ajax({
+                type: 'POST',
+                url: "{{ route('cart.remove') }}",
+                data: {
+                    _token: _token,
+                    id: id
+                },
+                dataType: 'json',
+                success: function (data) {
+                    let no = 1;
+                    let html = "";
+                    $.each(data, function (index, item) {
+                        //console.log(item);
+                        
+                        html += `<tr>
+                                    <td>${no++}</td>
+                                    <td>${item.associatedModel.barcode}</td>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${item.price}</td>
+                                    <td><input type="button" data-rowid="${item.id}"
+                                                class="remove-cart btn btn-danger"
+                                                value="Remove"></td>
+                                </tr>`;
 
-    // });
+                        console.log(html);
+                    });
+
+                    $('#cart-item').html(html);
+                   
+                }
+    	    });
+    })
+
+    $('#barang').on('click', '.barang',function (){
+                const id =  $(this).attr('data-id');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/barang/getBarangById',
+                    data: {
+                        _token: _token,
+                        id: id
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data.length);
+                        $("input[name='id']").val(data.barang_id);
+                        $("input[name='nama_barang']").val(data.nama_barang);
+                        $("input[name='harga_barang']").val(data.harga_beli);
+
+                        $('#modal-barang').modal('hide');
+                    }
+    	        });
+                            
+              });
+  
+});
 
 </script>
 @endpush

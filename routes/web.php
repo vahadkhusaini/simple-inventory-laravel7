@@ -29,4 +29,9 @@ Route::group(['middleware' => 'auth'], function(){
     Route::post('/supplier/insert','SupplierController@insert');
     Route::post('/barang/getSupplier','BarangController@getSupplier');
     Route::post('/barang/getBarang','BarangController@getBarang');
+    Route::post('/barang/getBarangById','BarangController@getBarangById')->name('barang.byId');
+    Route::get('/cart/index','CartController@index')->name('cart.index');
+    Route::post('/cart/add','CartController@add')->name('cart.add');
+    Route::post('/cart/remove','CartController@remove')->name('cart.remove');
+    Route::post('/cart/{id}/update','CartController@update');
 });
