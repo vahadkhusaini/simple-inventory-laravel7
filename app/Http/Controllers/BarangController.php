@@ -51,6 +51,7 @@ class BarangController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    
     public function store(Request $request)
     {
         $barang_id = auto_id('barang','barang_id','BRG');
@@ -164,7 +165,6 @@ class BarangController extends Controller
             ->get();
 
             return Response::json($data);
-            
         }
     }
 

@@ -26,8 +26,9 @@
                 </div>
                 <div class="card-body">
                     <form action="javascript:void(0)"
-                        id="tambah-pemesanan"
+                        id="form-pesanan"
                         method="post">
+                        @csrf
                         <div class="modal-body">
                             <div class="row pr-4">
                                 <div class="col-md-6">
@@ -182,6 +183,7 @@
                                                             <th>Nama Barang</th>
                                                             <th>Qty</th>
                                                             <th>Harga</th>
+                                                            <th>Subtotal</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
@@ -233,7 +235,7 @@
                                 <th>Kode Barang</th>
                                 <th>Barcode</th>
                                 <th>Nama Barang </th>
-                                <th>Harga Barang</th>
+                                <th>Sub Total</th>
                             </tr>
                         </thead>
                     </table>
@@ -252,11 +254,9 @@
 @push('child-css')
     <link rel="stylesheet" href="{{ asset('admin/plugins/flatpickr/package/dist/themes/airbnb.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/plugins/bootstrap4-editable/css/bootstrap-editable.css') }}">
-   
 @endpush
 
 @push('child-js')
-
 <script src="{{ asset('admin/plugins/flatpickr/package/dist/flatpickr.js') }}"></script>
 <script src="{{ asset('admin/plugins/bootstrap4-editable/js/bootstrap-editable.js') }}"></script>
 <script>
@@ -264,13 +264,62 @@
 
     let _token = $('meta[name="csrf-token"]').attr('content');
 
+    $('#form-pesanan').validate({
+                rules: {
+                    tanggal: {
+                        required: true
+                    },
+                    supplier_id: {
+                        required: true
+                    },
+                },
+                messages: {
+                    tanggal: {
+                        required: "Wajib di isi"
+                    },
+                    supplier_id: {
+                        required: "Wajid di isi"
+                    },
+                },
+                errorElement: 'span',
+                errorPlacement: function (error, element) {
+                    error.addClass('invalid-feedback');
+                    element.closest('.col-sm-8').append(error);
+                },
+                highlight: function (element, errorClass, validClass) {
+                    $(element).addClass('is-invalid');
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).removeClass('is-invalid');
+                },
+                submitHandler: function (form) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/pesanan',
+                        data: $('#form-pesanan').serialize(),
+                        dataType: 'json',
+                        success: function (output) {
+                            Swal.fire({
+                                position: 'top',
+                                type: 'success',
+                                title: output.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+							window.setTimeout(function () {
+								location.reload();
+							}, 1070);
+                        }
+                    });
+                }
+            })
+
     $("input[name='tanggal']").flatpickr({
           altInput: true,
           altFormat: "d/m/Y",
           dateFormat: "Y/m/d",
           defaultDate: "today"
         });
-
 
     const tanggal = $( "input[name='tanggal']" ).val();
 
@@ -331,10 +380,47 @@
             });
     })
 
+    function cart_table(data)
+    {
+        let no = 1;
+        let total = 0;
+        let total_item = 0;
+        let html = "";
+        $.each(data, function (index, item) {
+            console.log(item);
+            let subtotal = item.price * item.quantity;
+            total += subtotal;
+            total_item += Number(item.quantity);
+
+            html += `<tr>
+                                    <td>${no++}</td>
+                                    <td>${item.associatedModel.barcode}</td>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${item.price}</td>
+                                    <td>${subtotal}</td>
+                                    <td><a href="javascript:void(null)" data-rowid="${item.id}"
+                                        class="remove-cart btn-sm btn-danger"><i class="nav-icon fas fa-trash"></i></td>
+                                </tr>`;
+
+
+            console.log(html);
+        });
+
+        html += `<tr>
+                                <th colspan="3"><center><strong>Total</strong></center></th>
+                                <th colspan="2"><strong>${total_item}</strong></th>
+                                <th colspan="2"><strong>${total}</strong></th>
+                            </tr>`;
+
+        $('#cart-item').html(html);
+    }
+
     $('#add-to-cart').on('click', function(){
         const id = $("input[name='id']").val();
         const qty = $("input[name='jumlah']").val();
         const harga = $("input[name='harga_barang']").val();
+        
         
         $.ajax({
                 type: 'POST',
@@ -347,33 +433,32 @@
                 },
                 dataType: 'json',
                 success: function (data) {
-                    let no = 1;
-                    let html = "";
-                    $.each(data, function (index, item) {
-                        //console.log(item);
-                        
-                        html += `<tr>
-                                    <td>${no++}</td>
-                                    <td>${item.associatedModel.barcode}</td>
-                                    <td>${item.name}</td>
-                                    <td>
-                                        <a href="javascript:void(null)" class="edit-qty" data-type="text" data-pk="${item.id}" data-url="/cart/${item.id}/update" data-title="Masukkan Nilai">${item.quantity}</a>
-                                    </td>
-                                    <td>${item.price}</td>
-                                    <td><input type="button" data-rowid="${item.id}"
-                                        class="remove-cart btn-sm btn-danger" value="Remove">
-                                    </td>
-                                </tr>`;
-
-                    });
-
-                    $('#cart-item').html(html);
+                    cart_table(data);
+                   
+                    $("input[name='id']").val("");
+                    $("input[name='nama_barang']").val("");
+                    $("input[name='jumlah']").val(null);
+                    $("input[name='harga_barang']").val(null);
+                    $("input[name='total']").val(null);
                    
                 }
     	    });
     })
 
     $('.edit-qty').editable();
+
+    function get_total() {
+        const total = $("input[name='jumlah']").val() * $("input[name='harga_barang']").val();
+        $('#total').val(total);
+    }
+
+    $("input[name='jumlah']").on('keyup', function () {
+        get_total();
+    });
+
+    $("input[name='harga_barang']").on('keyup', function () {
+        get_total();
+    });
 
     $('#cart-table').on('click', '.remove-cart',function (){
         const id = $(this).data('rowid');
@@ -388,33 +473,14 @@
                 },
                 dataType: 'json',
                 success: function (data) {
-                    let no = 1;
-                    let html = "";
-                    $.each(data, function (index, item) {
-                        //console.log(item);
-                        
-                        html += `<tr>
-                                    <td>${no++}</td>
-                                    <td>${item.associatedModel.barcode}</td>
-                                    <td>${item.name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>${item.price}</td>
-                                    <td><input type="button" data-rowid="${item.id}"
-                                                class="remove-cart btn btn-danger"
-                                                value="Remove"></td>
-                                </tr>`;
-
-                        console.log(html);
-                    });
-
-                    $('#cart-item').html(html);
-                   
+                   cart_table(data);
                 }
     	    });
     })
 
     $('#barang').on('click', '.barang',function (){
                 const id =  $(this).attr('data-id');
+                $("input[name='jumlah']").focus();
 
                 $.ajax({
                     type: 'POST',

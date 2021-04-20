@@ -26,14 +26,14 @@
                     <table id="table" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>ID Barang</th>
-                                <th>Nama Barang</th>
-                                <th>Harga Beli</th>
-                                <th>Harga Jual</th>
+                                <th>Tanggal</th>
+                                <th>ID ORDER</th>
+                                <th>Nama Supplier</th>
+                                <th>Total (Rupiah)</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
+                        
                     </table>
                 </div>
                 <!-- /.card-body -->
@@ -47,7 +47,22 @@
 
 @push('child-js')
 <script>
+    var table;
 
-   
+$(function () {
+
+    table = $('#table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('pesanan.index') }}",
+        columns: [
+            {data: 'tanggal', name: 'tanggal'},
+            {data: 'pesanan_id', name: 'pesanan_id'},
+            {data: 'nama_supplier', name: 'nama_supplier'},
+            {data: 'total', name: 'total'},
+            {data: 'action', name: 'action'},
+        ]
+    });
+});
 </script>
 @endpush

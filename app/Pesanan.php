@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Pesanan extends Model
@@ -9,12 +10,8 @@ class Pesanan extends Model
     protected $table = 'pesanan';
     protected $fillable = [
         'id',
+        'tanggal',
         'supplier_id',
         'status'
     ];
-
-    public function pesanan_detail()
-    {
-        return $this->hasMany(PesananDetail::class);
-    }
 }
