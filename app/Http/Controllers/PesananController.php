@@ -16,21 +16,36 @@ class PesananController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            $from = date('Y-m-d', strtotime($request->get('from')));
+            $of = date('Y-m-d', strtotime($request->get('of')));
 
-            $orders = DB::table('pesanan')
-            ->join('supplier', 'pesanan.supplier_id', '=', 'supplier.id')
+
+            // $start = new DateTime($request->get('start'));
+            // $end = new DateTime($request->get('end'));
+
+            $query = DB::table('pesanan');
+
+            if($request->get('from')){
+                $query->whereBetween('tanggal', [
+                    $from, 
+                    $of
+                ]);
+            }
+
+            $orders = $query->join('supplier', 'pesanan.supplier_id', '=', 'supplier.id')
             ->join('pesanan_detail', 'pesanan.id', '=', 'pesanan_detail.pesanan_id')
             ->select('pesanan.*', 'supplier.nama_supplier', 'pesanan_detail.*',
               DB::raw('SUM(harga_beli * satuan_beli) as total')) 
-            ->groupBy('pesanan_detail.pesanan_id')
-            ->get(); 
+            ->groupBy('pesanan_detail.pesanan_id')->get(); 
+
 
             return \DataTables::of($orders)
                     ->editColumn('tanggal', function($row){
-                        return date("d-m-Y", strtotime($row->tanggal));
+                        return date('d-m-Y', strtotime($row->tanggal));
                     })
                     ->editColumn('total', function($row){
                         return number_format($row->total);

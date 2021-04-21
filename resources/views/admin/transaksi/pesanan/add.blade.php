@@ -253,12 +253,10 @@
 
 @push('child-css')
     <link rel="stylesheet" href="{{ asset('admin/plugins/flatpickr/package/dist/themes/airbnb.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/plugins/bootstrap4-editable/css/bootstrap-editable.css') }}">
 @endpush
 
 @push('child-js')
 <script src="{{ asset('admin/plugins/flatpickr/package/dist/flatpickr.js') }}"></script>
-<script src="{{ asset('admin/plugins/bootstrap4-editable/js/bootstrap-editable.js') }}"></script>
 <script>
     $(document).ready(function() {
 
@@ -397,8 +395,8 @@
                                     <td>${item.associatedModel.barcode}</td>
                                     <td>${item.name}</td>
                                     <td>${item.quantity}</td>
-                                    <td>${item.price}</td>
-                                    <td>${subtotal}</td>
+                                    <td>${item.price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</td>
+                                    <td>${subtotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</td>
                                     <td><a href="javascript:void(null)" data-rowid="${item.id}"
                                         class="remove-cart btn-sm btn-danger"><i class="nav-icon fas fa-trash"></i></td>
                                 </tr>`;
@@ -410,7 +408,7 @@
         html += `<tr>
                                 <th colspan="3"><center><strong>Total</strong></center></th>
                                 <th colspan="2"><strong>${total_item}</strong></th>
-                                <th colspan="2"><strong>${total}</strong></th>
+                                <th colspan="2"><strong>${total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</strong></th>
                             </tr>`;
 
         $('#cart-item').html(html);
@@ -420,7 +418,6 @@
         const id = $("input[name='id']").val();
         const qty = $("input[name='jumlah']").val();
         const harga = $("input[name='harga_barang']").val();
-        
         
         $.ajax({
                 type: 'POST',
@@ -444,8 +441,6 @@
                 }
     	    });
     })
-
-    $('.edit-qty').editable();
 
     function get_total() {
         const total = $("input[name='jumlah']").val() * $("input[name='harga_barang']").val();
@@ -501,7 +496,6 @@
     	        });
                             
               });
-  
 });
 
 </script>
