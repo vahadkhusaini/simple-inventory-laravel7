@@ -15,8 +15,8 @@ class Pembelian extends Model
         return $this->belongsTo(Supplier::class);
     }
 
-    public function pesanan_detail()
+    public function pembelian_detail()
     {
-        return $this->hasMany(PesananDetail::class);
+        return $this->hasMany(PembelianDetail::class);
     }
 }

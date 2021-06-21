@@ -26,7 +26,7 @@
   <table width="100%">
     <tr>
         <td align="left">
-            <h3>PURCHASE ORDER</h3>
+            <h3>PURCHASING</h3>
               
             {{ $orders->supplier->nama_supplier }}
             <br>

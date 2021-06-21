@@ -25,11 +25,15 @@ Route::group(['middleware' => 'auth'], function(){
     Route::resource('pelanggan', 'PelangganController');
     Route::resource('supplier', 'SupplierController');
     Route::resource('barang', 'BarangController');
+
     Route::resource('pesanan', 'PesananController');
     Route::post('/pesanan/getById','PesananController@getOrdersById')->name('barang.byId');
-    Route::resource('pembelian', 'PembelianController');
     Route::get('/cetak_pdf/{tgl1}/{tgl2}/{supplier_id}','PesananController@cetak_laporan_pdf');
     Route::get('/cetak_invoice_pdf/{id}','PesananController@cetak_invoice_pdf');
+
+    Route::resource('pembelian', 'PembelianController');
+    Route::get('/cetak_invoice_pdf/{id}','PembelianController@cetak_invoice_pdf');
+    
 
     Route::post('/supplier/insert','SupplierController@insert');
     Route::post('/barang/getSupplier','BarangController@getSupplier');

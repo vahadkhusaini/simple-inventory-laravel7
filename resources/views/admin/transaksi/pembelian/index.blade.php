@@ -203,7 +203,7 @@
             const id = $(this).data('id');
 
             Swal.fire({
-                    title: 'Cetak Pemesanan?',
+                    title: 'Cetak Pembelian?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
