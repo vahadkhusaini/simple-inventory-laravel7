@@ -108,7 +108,6 @@
     var table;
 
     $(function () {
-    
         table = $('#table').DataTable({
             processing: true,
             serverSide: true,
@@ -130,6 +129,7 @@
         $('#form-barang')[0].reset();
     	$("input[name='id']").val(null);
     	$("input[name='barang_id']").val(null);
+        $("#supplier").val(null).trigger('change');
         select_supplier();
 
         validate();
@@ -148,20 +148,23 @@
     	},
     	dataType: 'json',
     	success: function (pl) {
+            console.log(pl.supplier.id);
+            console.log(pl.supplier.nama_supplier);
+
     	    $("input[name='id']").val(pl.barang.id);
     	    $("input[name='barcode']").val(pl.barang.barcode);
     	    $("input[name='nama_barang']").val(pl.barang.nama_barang);
     	    $("input[name='harga_beli']").val(pl.barang.harga_beli);
     	    $("input[name='harga_jual']").val(pl.barang.harga_jual);
+
             var data = {
-                id: pl.barang.id,
+                id: pl.supplier.id,
                 text: pl.supplier.nama_supplier
             };
 
-            var newOption = new Option(data.text, data.id, false, false);
+            var newOption = new Option(data.text, data.id, true, true);
             $('#supplier').append(newOption).trigger('change');
 
-            select_supplier();
     	    $('#modal').modal('show');
 
     	    validate();

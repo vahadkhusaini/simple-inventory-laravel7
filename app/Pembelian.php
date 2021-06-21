@@ -2,19 +2,13 @@
 
 namespace App;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
-class Pesanan extends Model
+class Pembelian extends Model
 {
     public $incrementing = false;
-    protected $table = 'pesanan';
-    protected $fillable = [
-        'id',
-        'tanggal',
-        'supplier_id',
-        'status'
-    ];
+    protected $table = 'pembelian';
+    protected $guarded = [];
 
     public function supplier()
     {

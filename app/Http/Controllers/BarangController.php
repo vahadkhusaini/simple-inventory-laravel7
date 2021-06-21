@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use\App\Barang;
+use \App\Barang;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Response;
@@ -33,6 +33,7 @@ class BarangController extends Controller
         }
 
         return view('admin.barang.index');
+
     }
 
     /**
@@ -42,7 +43,7 @@ class BarangController extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**
@@ -134,15 +135,16 @@ class BarangController extends Controller
     public function getSupplier(Request $request)
     {
         if(!$request->search){
-            $data = DB::table('supplier')->select("id", "supplier_id", "nama_supplier")->latest('supplier_id')->get();
+            $data = DB::table('supplier')
+            ->select("id", "supplier_id", "nama_supplier")->latest('id')
+            ->get();
 
             return Response::json($data);
         }else{
             $cari = $request->search;
             $data = DB::table('supplier')
-            ->select("supplier_id", "nama_supplier")
-            ->where('supplier_id','LIKE',"%$cari%")
-            ->Orwhere('nama_supplier','LIKE',"%$cari%")
+            ->select("id", "supplier_id", "nama_supplier")
+            ->where('nama_supplier','LIKE',"%$cari%")
             ->get();
 
             return Response::json($data);

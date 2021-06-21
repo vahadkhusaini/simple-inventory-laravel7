@@ -1,5 +1,5 @@
 @extends('admin.main')
-@section('Pesanan', 'active')
+@section('Pembelian', 'active')
 @section('content')
 
 <!-- Content Wrapper. Contains page content -->
@@ -9,7 +9,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Pemesanan</h1>
+                    <h1>Pembelian</h1>
                 </div>
             </div>
         </div><!-- /.container-fluid -->
@@ -22,20 +22,54 @@
             <!-- Basic Card Example -->
             <div class="card card=default">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Form Pemesanan</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Form Pembelian</h6>
                 </div>
                 <div class="card-body">
                     <form action="javascript:void(0)"
-                        id="form-pesanan"
+                        id="form-pembelian"
                         method="post">
                         @csrf
                         <div class="modal-body">
-                            <div class="row pr-4">
-                                <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-6 pr-5">
+                                    <div class="form-group row">
+                                        <label for="inputPassword" class="col-md-5 col-form-label">No
+                                            Pemesanan</label>
+                                        <div class="col-md-7">
+                                            <div class="input-group">
+                                                <input type="text" required readonly id="no_pemesanan" class="form-control"
+                                                    name="pesanan_id" placeholder="Pemesanan">
+                                                <div class="input-group-append">
+                                                    <button id="pilih-pesanan"
+                                                        class="btn btn-outline-primary"
+                                                        type="button">Pilih</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="inputPassword" class="col-md-5 col-form-label">No
+                                            Nota</label>
+                                        <div class="col-md-7">
+                                            <input type="text" class="form-control" name="no_nota">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="inputPassword"
+                                            class="col-md-5 col-form-label">Supplier</label>
+                                        <div class="col-md-7">
+                                            <div class="input-group">
+                                                <select class="form-control"
+                                                    id="supplier"
+                                                    name="supplier_id">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="form-group row">
                                         <label for="inputPassword"
                                             class="col-md-5 col-form-label">Tanggal
-                                            Pemesanan</label>
+                                            Pembelian</label>
                                         <div class="col-md-7">
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
@@ -50,20 +84,53 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
                                 </div>
                                 <div class="col-md-6 pl-5">
-                                    <div class="form-group row">
-                                        <label for="inputPassword"
-                                            class="col-md-4 col-form-label">Supplier</label>
-                                        <div class="col-md-8">
+                                    <fieldset>
+                                        <legend>Metode pembayaran</legend>
+                                    
+                                        <div class="col-md-5 pt-2">
                                             <div class="input-group">
-                                                <select class="form-control"
-                                                    id="supplier"
-                                                    name="supplier_id">
-                                                </select>
+                                                <div class="form-check form-check-inline pr-3">
+                                                    <input class="form-check-input" type="radio"
+                                                        name="jenis_pembelian" id="tunai" value="T">
+                                                    <label class="form-check-label" for="tunai">
+                                                        Tunai
+                                                    </label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio"
+                                                        name="jenis_pembelian" id="kredit" value="K">
+                                                    <label class="form-check-label" for="kredit">
+                                                        Kredit
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                      </fieldset>
+                                    <fieldset>
+                                        <legend class="pt-4">Tempo</legend>
+                                    
+                                        <div class="col-md-8 pt-2">
+                                            <div class="input-group">
+                                                    <div class="form-group">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">
+                                                                    <i class="far fa-calendar-alt"></i>
+                                                                </span>
+                                                            </div>
+                                                            <input type="text"
+                                                                class="form-control float-right"
+                                                                id="tempo" name="tempo">
+                                                        </div>
+                                                        <!-- /.input group -->
+                                                    </div>
+                                                    <!-- /.form group -->
+                                            </div>
+                                        </div>
+                                      </fieldset>
                                 </div>
                             </div>
                         </div>
@@ -249,89 +316,68 @@
 </div>
 <!-- /.modal -->
 
+<div class="modal fade bd-example-modal-lg"
+    id="modal-pesanan">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Daftar Pemesanan</h4>
+                <button type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered"
+                        id="pesanan"
+                        width="100%"
+                        cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>ID ORDER</th>
+                                <th>Nama Supplier</th>
+                                <th>Total (Rupiah)</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
 @endsection
 
 @push('child-css')
-<link rel="stylesheet" href="{{ asset('admin/plugins/flatpickr/package/dist/themes/airbnb.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/plugins/flatpickr/package/dist/themes/airbnb.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/plugins/daterangepicker/daterangepicker.css') }}">
 @endpush
 
 @push('child-js')
 <script src="{{ asset('admin/plugins/flatpickr/package/dist/flatpickr.js') }}"></script>
+<script src="{{ asset('admin/plugins/moment/moment.min.js') }}"></script>
+<script src="{{ asset('admin/plugins/daterangepicker/daterangepicker.js') }}"></script>
 <script>
     $(document).ready(function() {
-    
+
     let _token = $('meta[name="csrf-token"]').attr('content');
 
+    // Form Header
+			
     $("input[name='tanggal']").flatpickr({
-        altInput: true,
-        altFormat: "d/m/Y",
-        dateFormat: "Y/m/d",
-        defaultDate: "today"
+          altInput: true,
+          altFormat: "d/m/Y",
+          dateFormat: "Y/m/d",
+          defaultDate: "today"
     });
-
-    $('#form-pesanan').validate({
-                rules: {
-                    tanggal: {
-                        required: true
-                    },
-                    supplier_id: {
-                        required: true
-                    },
-                },
-                messages: {
-                    tanggal: {
-                        required: "Wajib di isi"
-                    },
-                    supplier_id: {
-                        required: "Wajid di isi"
-                    },
-                },
-                errorElement: 'span',
-                errorPlacement: function (error, element) {
-                    error.addClass('invalid-feedback');
-                    element.closest('.col-md-8').append(error);
-                },
-                highlight: function (element, errorClass, validClass) {
-                    $(element).addClass('is-invalid');
-                },
-                unhighlight: function (element, errorClass, validClass) {
-                    $(element).removeClass('is-invalid');
-                },
-                submitHandler: function (form) {
-                    Swal.fire({
-                    title: 'Simpan transaksi pemesanan?',
-                    text: "Pastikan semua data benar!",
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Simpan',
-                    preConfirm: (yes) => {
-                            // Start of AJAX
-                            $.ajax({
-                                type: 'POST',
-                                url: '/pesanan',
-                                data: $('#form-pesanan').serialize(),
-                                dataType: 'json',
-                                success: function (output) {
-                                    Swal.fire({
-                                        position: 'top',
-                                        type: 'success',
-                                        title: output.message,
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    })
-                                    window.setTimeout(function () {
-                                        location.reload();
-                                    }, 1070);
-                                }
-                            });
-                            // End of AJAX
-                        },
-                    })
-                }
-                // End of submitHandler
-            })
 
     $('#supplier').select2({
         theme: 'bootstrap4',
@@ -365,6 +411,35 @@
         },
 
     });
+    
+    function tempo(boolean){
+        $("input[name='tempo']").flatpickr({
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y/m/d",
+            defaultDate: "today",
+            disable: [
+                function(date){
+                    return boolean;
+                }
+            ]
+        });
+    }
+
+    tempo(true);
+
+    $("input[type='radio']").click(function(){
+            var radioValue = $("input[name='jenis_pembelian']:checked").val();
+            if(radioValue === 'K'){
+                tempo(false);
+            }else{
+                tempo(true);
+            }
+    });
+
+    // End Form Header
+
+    // Start Form Detail
 
     $('#pilih-barang').on('click', function(){
         const url = $(this).data('url');
@@ -386,6 +461,44 @@
                     {data: 'barcode', name: 'barcode'},
                     {data: 'nama_barang', name: 'nama_barang'},
                     {data: 'harga_beli', name: 'harga_beli'},
+                ]
+            });
+    })
+
+    $('#pilih-pesanan').on('click', function(){
+        const url = $(this).data('url');
+        $('#modal-pesanan').modal('show');
+
+        var table = $('#pesanan').DataTable({
+                processing: true,
+                serverSide: true,
+                order: [
+                    [0, "desc"]
+                ],
+                bDestroy: true,
+                createdRow: function( row, data, dataIndex ) {
+					 $( row )
+					 .addClass('pesanan')
+					 .attr('data-id', data.pesanan_id)
+				},
+                ajax: "{{ route('pesanan.index') }}",
+                columns: [
+                    {
+                        data: 'tanggal',
+                        name: 'tanggal'
+                    },
+                    {
+                        data: 'pesanan_id',
+                        name: 'pesanan_id'
+                    },
+                    {
+                        data: 'nama_supplier',
+                        name: 'nama_supplier'
+                    },
+                    {
+                        data: 'total',
+                        name: 'total'
+                    },
                 ]
             });
     })
@@ -509,7 +622,118 @@
     	        });
                             
               });
+
+        $('#pesanan').on('click', '.pesanan',function (){
+                const id =  $(this).attr('data-id');
+                console.log(id);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/pesanan/getById',
+                    data: {
+                        _token: _token,
+                        id: id
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        cart_table(data.cart);
+                        $("input[name='pesanan_id']").val(data.header.id);
+
+                        var data = {
+                            id: data.supplier.id,
+                            text: data.supplier.nama_supplier
+                        };
+
+                        var newOption = new Option(data.text, data.id, true, true);
+                        $('#supplier').append(newOption).trigger('change');
+
+                        $('#modal-pesanan').modal('hide');
+                    }
+    	        });
+                            
+        });
 });
 
+// End Form Detail
+
+// Start Save Ajax
+
+        $('#form-pembelian').validate({
+                rules: {
+                    supplier_id: {
+                        required: true
+                    },
+                    no_nota: {
+                        required: true
+                    },
+                    no_pemesanan: {
+                        required: true
+                    },
+                    jenis_pembelian: {
+                        required: true
+                    },
+                },
+                messages: {
+                    supplier_id: {
+                        required: "Wajid di isi"
+                    },
+                    no_nota: {
+                        required: "Wajid di isi"
+                    },
+                    no_pemesanan: {
+                        required: "Wajid di isi"
+                    },
+                    jenis_pembelian: {
+                        required: "Wajid di isi"
+                    },
+                },
+                errorElement: 'span',
+                errorPlacement: function (error, element) {
+                    error.addClass('invalid-feedback');
+                    element.closest('.col-md-8').append(error);
+                },
+                highlight: function (element, errorClass, validClass) {
+                    $(element).addClass('is-invalid');
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).removeClass('is-invalid');
+                },
+                submitHandler: function (form) {
+                    Swal.fire({
+                    title: 'Simpan transaksi pembelian?',
+                    text: "Pastikan semua data benar!",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Simpan',
+                    preConfirm: (yes) => {
+                            // Start of AJAX
+                            $.ajax({
+                                type: 'POST',
+                                url: '/pembelian',
+                                data: $('#form-pembelian').serialize(),
+                                dataType: 'json',
+                                success: function (output) {
+                                    Swal.fire({
+                                        position: 'top',
+                                        type: 'success',
+                                        title: output.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    })
+                                    window.setTimeout(function () {
+                                        location.reload();
+                                    }, 1070);
+                                }
+                            });
+                            // End of AJAX
+                        },
+                    })
+                }
+                // End of submitHandler
+            })
+
+        // End Save Ajax
 </script>
 @endpush

@@ -1,5 +1,5 @@
 @extends('admin.main')
-@section('Pesanan', 'active')
+@section('Pembelian', 'active')
 @section('content')
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
@@ -8,7 +8,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Kelola Pesanan</h1>
+                    <h1>Kelola Pembelian</h1>
                 </div>
             </div>
         </div><!-- /.container-fluid -->
@@ -19,7 +19,7 @@
         <div class="container-fluid">
             <div class="card">
                 <div class="card-header">
-                    <a href="/pesanan/create"
+                    <a href="/pembelian/create"
                         class="btn btn-primary">
                         <i class="fas fa-plus"></i> Tambah</a>
                 </div>
@@ -92,7 +92,7 @@
         let _token = $('meta[name="csrf-token"]').attr('content');
 
         var table;
-        table_pesanan();
+        table_pembelian();
         var startDate;
         var endDate;
 
@@ -112,7 +112,7 @@
                     startDate = start.format('YYYY-MM-DD');
                     endDate = end.format('YYYY-MM-DD');
 
-                    table_pesanan(startDate, endDate);
+                    table_pembelian(startDate, endDate);
                     console.log("A new date selection was made: " + start.format('YYYY-MM-DD') +
                         ' to ' + end.format('YYYY-MM-DD'));
                 });
@@ -133,17 +133,31 @@
                     showConfirmButton: false,
                     timer: 1500
                 })
+            }
+            else if(supplier_id == undefined){
+                Swal.fire({
+                    position: 'center',
+                    type: 'error',
+                    title: 'Pilih Supplier',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
             }else{
-                table_pesanan(startDate, endDate, supplier_id);
+                table_pembelian(startDate, endDate, supplier_id);
             }
         })
 
         $('#reset').on('click', function () {
 
-            
-            $("#supplier").val(null).trigger('change');
+            var data = {
+                id: 0,
+                text: "Pilih Supplier"
+            }
 
-            table_pesanan();
+            var newOption = new Option(false, false);
+            $('#supplier').append(newOption).trigger('change');
+
+            table_pembelian();
         })
 
         $('#print').on('click', function () {
@@ -157,6 +171,15 @@
                     position: 'center',
                     type: 'error',
                     title: 'Pilih Tanggal',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }
+            else if(supplier_id == undefined){
+                Swal.fire({
+                    position: 'center',
+                    type: 'error',
+                    title: 'Pilih Supplier',
                     showConfirmButton: false,
                     timer: 1500
                 })
@@ -225,7 +248,7 @@
             },
         });
 
-        function table_pesanan(startDate, endDate, supplier_id) {
+        function table_pembelian(startDate, endDate, supplier_id) {
             console.log(startDate);
 
             table = $('#table').DataTable({
@@ -236,7 +259,7 @@
                 ],
                 bDestroy: true,
                 ajax: {
-                    url: "{{ route('pesanan.index') }}",
+                    url: "{{ route('pembelian.index') }}",
                     type: "GET",
                     data: {
                         from: startDate,
@@ -249,8 +272,8 @@
                         name: 'tanggal'
                     },
                     {
-                        data: 'pesanan_id',
-                        name: 'pesanan_id'
+                        data: 'pembelian_id',
+                        name: 'pembelian_id'
                     },
                     {
                         data: 'nama_supplier',

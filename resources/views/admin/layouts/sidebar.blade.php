@@ -46,15 +46,15 @@
                 </li>
                 <li class="nav-item">
                     <a href="/pesanan" class="nav-link @yield('Pesanan')">
-                        <i class="nav-icon fas fa-th"></i>
+                        <i class="nav-icon fas fa-shopping-cart"></i>
                         <p>
                             Purchase Order
                         </p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="pages/widgets.html" class="nav-link">
-                        <i class="nav-icon fas fa-th"></i>
+                    <a href="/pembelian" class="nav-link @yield('Pembelian')">
+                        <i class="nav-icon fas fa-cart-plus"></i>
                         <p>
                             Pembelian
                         </p>

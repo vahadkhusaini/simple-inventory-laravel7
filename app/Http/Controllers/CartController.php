@@ -54,4 +54,9 @@ class CartController extends Controller
 
         return $this->getData();
     }
+
+    public function getOrder()
+    {
+        
+    }
 }
