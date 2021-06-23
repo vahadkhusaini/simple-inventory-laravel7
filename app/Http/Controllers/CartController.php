@@ -20,6 +20,27 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $barang = Barang::where('barang_id', $request->id)->first();
+
+        if($request->trans == 'penjualan'){
+            if($request->qty > $barang->stok)
+            {
+                return Response::json([
+                    'success' => 'false',
+                    'errors' => 'Stok tidak mencukupi'
+                ], 404);
+            }
+
+            return $this->store($request, $barang);
+
+        }
+
+        return $this->store($request, $barang);
+
+    }
+
+
+    public function store($request, $barang){
+
         $id = Str::random(12);
         $user = auth()->user()->id;
 

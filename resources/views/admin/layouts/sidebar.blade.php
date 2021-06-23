@@ -61,8 +61,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="pages/widgets.html" class="nav-link">
-                        <i class="nav-icon fas fa-th"></i>
+                    <a href="/penjualan" class="nav-link @yield('Penjualan')">
+                        <i class="nav-icon fas fa-shopping-cart"></i>
                         <p>
                             Penjualan
                         </p>

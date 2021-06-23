@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use \App\Pembelian;
 use \App\Barang;
-use \App\PembelianDetail;
+use \App\Penjualan;
+use \App\PenjualanDetail;
 use Cart;
 use Response;
 use PDF;
 
-class PembelianController extends Controller
+class PenjualanController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -26,9 +26,9 @@ class PembelianController extends Controller
             $of = date('Y-m-d', strtotime($request->get('of')));
             $month = date('m');
 
-            $supplier_id = $request->get('supplier_id');
+            $pelanggan_id = $request->get('pelanggan_id');
 
-            $query = DB::table('pembelian')
+            $query = DB::table('penjualan')
                     ->whereMonth('tanggal', $month);
 
             if($request->get('from')){
@@ -39,15 +39,15 @@ class PembelianController extends Controller
                 ]);
             }
 
-            if($request->get('supplier_id')){
-                $query->where('pembelian.supplier_id', '=', $supplier_id);
+            if($request->get('pelanggan_id')){
+                $query->where('penjualan.pelanggan_id', '=', $pelanggan_id);
             }
 
-            $orders = $query->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
-            ->join('pembelian_detail', 'pembelian.id', '=', 'pembelian_detail.pembelian_id')
-            ->select('pembelian.*', 'supplier.nama_supplier', 'pembelian_detail.*',
-              DB::raw('SUM( harga_beli * satuan_beli ) as total')) 
-            ->groupBy('pembelian_detail.pembelian_id')->get(); 
+            $orders = $query->join('pelanggan', 'penjualan.pelanggan_id', '=', 'pelanggan.id')
+            ->join('penjualan_detail', 'penjualan.id', '=', 'penjualan_detail.penjualan_id')
+            ->select('penjualan.*', 'pelanggan.nama_pelanggan', 'penjualan_detail.*',
+              DB::raw('SUM( harga_jual * satuan_jual ) as total')) 
+            ->groupBy('penjualan_detail.penjualan_id')->get(); 
 
             return \DataTables::of($orders)
                     ->editColumn('tanggal', function($row){
@@ -59,7 +59,7 @@ class PembelianController extends Controller
                     ->addColumn('action', function($row){
 
                         $btn = '
-                        <button data-id="'.$row->pembelian_id.'" class="print btn btn-primary btn-sm"><i class="nav-icon fas fa-print"></i></button>';
+                        <button data-id="'.$row->penjualan_id.'" class="print btn btn-primary btn-sm"><i class="nav-icon fas fa-print"></i></button>';
 
                         return $btn;
                     })
@@ -67,7 +67,7 @@ class PembelianController extends Controller
                     ->toJson();
         }  
 
-        return view('admin.transaksi.pembelian.index');
+        return view('admin.transaksi.penjualan.index');
     }
 
     /**
@@ -77,7 +77,7 @@ class PembelianController extends Controller
      */
     public function create()
     {
-        return view('admin.transaksi.pembelian.add');
+        return view('admin.transaksi.penjualan.add');
     }
 
     /**
@@ -88,48 +88,36 @@ class PembelianController extends Controller
      */
     public function store(Request $request)
     {
-        $pembelian_id = auto_id_trx('pembelian','id','PB');
+        $penjualan_id = auto_id_trx('penjualan','id','PJ');
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
         try{
-            // save data purchase to Pembelian Table
-
-            Pembelian::Create([
-                'id'  => $pembelian_id,
-                'no_nota' => $request->no_nota,
+            Penjualan::Create([
+                'id'  => $penjualan_id,
                 'tanggal' => $tanggal,
-                'supplier_id' => $request->supplier_id,
-                'tanggal_jatuh_tempo' => $request->tempo ?? '0000-00-00',
-                'jenis_pembayaran' => $request->jenis_pembelian,
-                'status' => '0',
+                'pelanggan_id' => $request->pelanggan_id,
             ]);
-
-            //fetch cart session according to user id
     
             $carts = Cart::session($userId)->getContent();
-                
-            // looping cart for save to pembelian detail table
+    
             foreach($carts as $cart){
                 $barang_id = $cart->associatedModel->id;
                 $qty = $cart->quantity;
 
                 $data = [
-                    'pembelian_id'  => $pembelian_id,
+                    'penjualan_id'  => $penjualan_id,
                     'barang_id' => $barang_id,
-                    'harga_beli' => $cart->price,
-                    'satuan_beli' => $qty,
+                    'harga_jual' => $cart->price,
+                    'satuan_jual' => $qty,
                 ];
                 
-                // save pembelian detail
-                PembelianDetail::insert($data);
-
-                // update stok 
-                Barang::find($barang_id)->increment('stok', $qty);
+                PenjualanDetail::insert($data);
+                Barang::find($barang_id)->decrement('stok', $qty);
             }
-            
-            // clear cart session for future cart
+    
             Cart::session($userId)->clear();
+    
     
             $output = [
                 'message' => 'Data Berhasil disimpan'
@@ -139,9 +127,7 @@ class PembelianController extends Controller
 
         }catch (\Illuminate\Database\QueryException $e)
         {
-            return Response::json([
-                'message' => $e
-            ]);
+            return Response::json($e);
         }
         
 
@@ -192,18 +178,18 @@ class PembelianController extends Controller
         //
     }
 
-    public function getSupplier(Request $request)
+    public function getPelanggan(Request $request)
     {
         if(!$request->search){
-            $data = DB::table('supplier')->select("id", "supplier_id", "nama_supplier")->latest('supplier_id')->get();
+            $data = DB::table('pelanggan')->select("id", "pelanggan_id", "nama_pelanggan")->latest('pelanggan_id')->get();
 
             return Response::json($data);
         }else{
             $cari = $request->search;
-            $data = DB::table('supplier')
-            ->select("supplier_id", "nama_supplier")
-            ->where('supplier_id','LIKE',"%$cari%")
-            ->Orwhere('nama_supplier','LIKE',"%$cari%")
+            $data = DB::table('pelanggan')
+            ->select("pelanggan_id", "nama_pelanggan")
+            ->where('pelanggan_id','LIKE',"%$cari%")
+            ->Orwhere('nama_pelanggan','LIKE',"%$cari%")
             ->get();
 
             return Response::json($data);
@@ -217,9 +203,9 @@ class PembelianController extends Controller
         $of = date('Y-m-d', strtotime($request->segment(3)));
         $month = date('m');
 
-        $supplier_id = $request->segment(4);
+        $pelanggan_id = $request->segment(4);
 
-        $query = DB::table('pembelian')
+        $query = DB::table('penjualan')
                 ->whereMonth('tanggal', $month);
 
         if($from && $of){
@@ -230,32 +216,32 @@ class PembelianController extends Controller
             ]);
         }
 
-        if($supplier_id){
-            $query->where('pembelian.supplier_id', '=', $supplier_id);
+        if($pelanggan_id){
+            $query->where('penjualan.pelanggan_id', '=', $pelanggan_id);
         }
 
-        $orders = $query->join('supplier', 'pembelian.supplier_id', '=', 'supplier.id')
-        ->join('pembelian_detail', 'pembelian.id', '=', 'pembelian_detail.pembelian_id')
-        ->select('pembelian.*', 'supplier.nama_supplier', 'pembelian_detail.*',
-          DB::raw('SUM( harga_beli * satuan_beli ) as total')) 
-        ->groupBy('pembelian_detail.pembelian_id')->get(); 
+        $orders = $query->join('pelanggan', 'penjualan.pelanggan_id', '=', 'pelanggan.id')
+        ->join('penjualan_detail', 'penjualan.id', '=', 'penjualan_detail.penjualan_id')
+        ->select('penjualan.*', 'pelanggan.nama_pelanggan', 'penjualan_detail.*',
+          DB::raw('SUM( harga_jual * satuan_jual ) as total')) 
+        ->groupBy('penjualan_detail.penjualan_id')->get(); 
 
-        $pdf = PDF::loadView('admin.transaksi.pembelian.pdf.index', compact('orders', 'from', 'of'))->setPaper('A4', 'potrait');
+        $pdf = PDF::loadView('admin.transaksi.penjualan.pdf.index', compact('orders', 'from', 'of'))->setPaper('A4', 'potrait');
    
         return $pdf->stream();
     }
 
     public function cetak_invoice_pdf(Request $request)
     {
-        $pembelian_id = $request->segment(2);
-        $orders = Pembelian::find($pembelian_id);
+        $penjualan_id = $request->segment(2);
+        $orders = Penjualan::find($penjualan_id);
 
-        $details = DB::table('pembelian_detail')
-                ->where('pembelian_id', '=', $pembelian_id)
-                ->join('barang', 'pembelian_detail.barang_id', '=', 'barang.id') 
-                ->select('barang.nama_barang', 'pembelian_detail.*')->get();       
+        $details = DB::table('penjualan_detail')
+                ->where('penjualan_id', '=', $penjualan_id)
+                ->join('barang', 'penjualan_detail.barang_id', '=', 'barang.id') 
+                ->select('barang.nama_barang', 'penjualan_detail.*')->get();       
 
-        $pdf = PDF::loadView('admin.transaksi.pembelian.pdf.inv', compact('orders', 'details'))->setPaper('A4', 'potrait');
+        $pdf = PDF::loadView('admin.transaksi.penjualan.pdf.inv', compact('orders', 'details'))->setPaper('A4', 'potrait');
    
         return $pdf->stream();
     }
