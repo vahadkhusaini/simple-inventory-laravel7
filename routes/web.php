@@ -33,11 +33,13 @@ Route::group(['middleware' => 'auth'], function(){
 
     Route::resource('pembelian', 'PembelianController');
     Route::get('/cetak_invoice_pdf/{id}','PembelianController@cetak_invoice_pdf');
+    Route::get('/cetak_laporan_pembelian/{tgl1}/{tgl2}/{supplier_id}','PembelianController@cetak_laporan_pdf');
 
     Route::resource('penjualan', 'PenjualanController');
     Route::get('/cetak_invoice_pdf/{id}','PenjualanController@cetak_invoice_pdf');
     Route::post('/penjualan/getPelanggan','PenjualanController@getPelanggan');
     
+    Route::get('/stok','KartuStokController@index')->name('stok');
 
     Route::post('/supplier/insert','SupplierController@insert');
     Route::post('/barang/getSupplier','BarangController@getSupplier');

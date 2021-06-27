@@ -93,34 +93,42 @@ class PesananController extends Controller
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
-        Pesanan::Create([
-            'id'  => $pesanan_id,
-            'tanggal' => $tanggal,
-            'supplier_id' => $request->supplier_id,
-            'status' => '0',
-        ]);
+        DB::beginTransaction();
 
-        $carts = Cart::session($userId)->getContent();
+        try{
+            Pesanan::Create([
+                'id'  => $pesanan_id,
+                'tanggal' => $tanggal,
+                'supplier_id' => $request->supplier_id,
+                'status' => '0',
+            ]);
 
-        foreach($carts as $cart){
-            $data = [
-                'pesanan_id'  => $pesanan_id,
-                'barang_id' => $cart->associatedModel->id,
-                'harga_beli' => $cart->price,
-                'satuan_beli' => $cart->quantity,
-            ];
-            
-            PesananDetail::insert($data);
+            $carts = Cart::session($userId)->getContent();
+
+            foreach($carts as $cart){
+                $data = [
+                    'pesanan_id'  => $pesanan_id,
+                    'barang_id' => $cart->associatedModel->id,
+                    'harga_beli' => $cart->price,
+                    'satuan_beli' => $cart->quantity,
+                ];
+                
+                PesananDetail::insert($data);
+            }
+
+            Cart::session($userId)->clear();
+
+            DB::commit();
+
+            return Response::json('Data Berhasil disimpan');
+
+        }catch (\Exception $e)
+        {
+            DB::rollback();
+            return Response::json(
+                'Data Gagal Disimpan'
+            , 500);
         }
-
-        Cart::session($userId)->clear();
-
-
-        $output = [
-            'message' => 'Data Berhasil disimpan'
-        ];
-
-        return Response::json($output);
     }
 
     /**
@@ -238,7 +246,7 @@ class PesananController extends Controller
             ]);
         }
 
-        if($supplier_id){
+        if($supplier_id != 'null'){
             $query->where('pesanan.supplier_id', '=', $supplier_id);
         }
 

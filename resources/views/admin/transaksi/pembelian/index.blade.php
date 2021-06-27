@@ -1,4 +1,5 @@
 @extends('admin.main')
+@section('Transaksi', 'menu-open')
 @section('Pembelian', 'active')
 @section('content')
 <!-- Content Wrapper. Contains page content -->
@@ -174,25 +175,16 @@
                     showConfirmButton: false,
                     timer: 1500
                 })
-            }
-            else if(supplier_id == undefined){
-                Swal.fire({
-                    position: 'center',
-                    type: 'error',
-                    title: 'Pilih Supplier',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
             }else{
             Swal.fire({
-                    title: 'Cetak Laporan Pemesanan?',
+                    title: 'Cetak Laporan Pembelian?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Cetak',
                     preConfirm: (yes) => {
-                            window.location = "/cetak_pdf/"+startDate+"/"+endDate+"/"+supplier_id;
+                            window.location = "/cetak_laporan_pembelian/"+startDate+"/"+endDate+"/"+supplier_id;
                             target = "_blank";
                         },
                     })

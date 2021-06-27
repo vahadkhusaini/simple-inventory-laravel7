@@ -1,4 +1,5 @@
 @extends('admin.main')
+@section('Master', 'menu-open')
 @section('Barang', 'active')
 @section('content')
 <!-- Content Wrapper. Contains page content -->
@@ -31,6 +32,7 @@
                                 <th>Nama Barang</th>
                                 <th>Harga Beli</th>
                                 <th>Harga Jual</th>
+                                <th>Stok</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -118,6 +120,7 @@
                 {data: 'nama_barang', name: 'nama_barang'},
                 {data: 'harga_beli', name: 'harga_beli'},
                 {data: 'harga_jual', name: 'harga_jual'},
+                {data: 'stok', name: 'stok'},
                 {data: 'action', name: 'action'},
             ]
         });

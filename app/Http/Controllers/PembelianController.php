@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use \App\Pembelian;
 use \App\Barang;
 use \App\PembelianDetail;
+use \App\KartuStok;
 use Cart;
 use Response;
 use PDF;
@@ -92,6 +93,8 @@ class PembelianController extends Controller
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
+        DB::beginTransaction();
+
         try{
             // save data purchase to Pembelian Table
 
@@ -124,24 +127,40 @@ class PembelianController extends Controller
                 // save pembelian detail
                 PembelianDetail::insert($data);
 
+                $barang = Barang::find($barang_id);
+
+                // update harga beli
+                $barang->harga_beli = $cart->price;
+                $barang->save();
+
                 // update stok 
-                Barang::find($barang_id)->increment('stok', $qty);
+                $barang->increment('stok', $qty);
+
+                // insert to stok
+                KartuStok::insert([
+                    'tanggal' => $tanggal,
+                    'barang_id' => $barang_id,
+                    'masuk' => $qty,
+                    'keluar' => 0,
+                    'harga' => $cart->prce,
+                ]);
             }
             
             // clear cart session for future cart
             Cart::session($userId)->clear();
-    
-            $output = [
-                'message' => 'Data Berhasil disimpan'
-            ];
+            
+            DB::commit();
 
-            return Response::json($output);
+            return Response::json(
+                'Data Berhasil disimpan'
+            );
 
-        }catch (\Illuminate\Database\QueryException $e)
+        }catch (\Exception $e)
         {
-            return Response::json([
-                'message' => $e
-            ]);
+            DB::rollback();
+            return Response::json(
+                'Data Gagal Disimpan'
+            , 500);
         }
         
 
@@ -230,7 +249,7 @@ class PembelianController extends Controller
             ]);
         }
 
-        if($supplier_id){
+        if($supplier_id != 'null'){
             $query->where('pembelian.supplier_id', '=', $supplier_id);
         }
 

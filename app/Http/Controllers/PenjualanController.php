@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use \App\Barang;
 use \App\Penjualan;
 use \App\PenjualanDetail;
+use \App\KartuStok;
 use Cart;
 use Response;
 use PDF;
@@ -92,6 +93,8 @@ class PenjualanController extends Controller
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
+        DB::beginTransaction();
+
         try{
             Penjualan::Create([
                 'id'  => $penjualan_id,
@@ -106,28 +109,40 @@ class PenjualanController extends Controller
                 $qty = $cart->quantity;
 
                 $data = [
-                    'penjualan_id'  => $penjualan_id,
+                    'penjualan_id' => $penjualan_id,
                     'barang_id' => $barang_id,
                     'harga_jual' => $cart->price,
                     'satuan_jual' => $qty,
                 ];
                 
                 PenjualanDetail::insert($data);
-                Barang::find($barang_id)->decrement('stok', $qty);
+                $barang = Barang::find($barang_id);
+                $barang->harga_jual = $cart->price;
+                $barang->save();
+                $barang->decrement('stok', $qty);
+
+                // insert to stok
+                KartuStok::insert([
+                    'tanggal' => $tanggal,
+                    'barang_id' => $barang_id,
+                    'masuk' => 0,
+                    'keluar' => $qty,
+                    'harga' => $cart->price,
+                ]);
             }
     
             Cart::session($userId)->clear();
-    
-    
-            $output = [
-                'message' => 'Data Berhasil disimpan'
-            ];
 
-            return Response::json($output);
+            DB::commit();
 
-        }catch (\Illuminate\Database\QueryException $e)
+            return Response::json('Data Berhasil disimpan');
+
+        }catch (\Exception $e)
         {
-            return Response::json($e);
+            DB::rollback();
+            return Response::json(
+                'Data Gagal Disimpan'
+            , 500);
         }
         
 
@@ -216,7 +231,7 @@ class PenjualanController extends Controller
             ]);
         }
 
-        if($pelanggan_id){
+        if($pelanggan_id != 'null'){
             $query->where('penjualan.pelanggan_id', '=', $pelanggan_id);
         }
 
@@ -242,7 +257,7 @@ class PenjualanController extends Controller
                 ->select('barang.nama_barang', 'penjualan_detail.*')->get();       
 
         $pdf = PDF::loadView('admin.transaksi.penjualan.pdf.inv', compact('orders', 'details'))->setPaper('A4', 'potrait');
-   
+        
         return $pdf->stream();
     }
 }

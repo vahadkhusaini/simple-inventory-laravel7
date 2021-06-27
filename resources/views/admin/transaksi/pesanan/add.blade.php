@@ -270,7 +270,7 @@
     });
 
     $('#form-pesanan').validate({
-                rules: {
+            rules: {
                     tanggal: {
                         required: true
                     },
@@ -313,17 +313,26 @@
                                 url: '/pesanan',
                                 data: $('#form-pesanan').serialize(),
                                 dataType: 'json',
-                                success: function (output) {
+                                success: function (data) {
                                     Swal.fire({
                                         position: 'top',
                                         type: 'success',
-                                        title: output.message,
+                                        title: data,
                                         showConfirmButton: false,
                                         timer: 1500
                                     })
                                     window.setTimeout(function () {
                                         location.reload();
                                     }, 1070);
+                                },
+                                error: function(data){
+                                    Swal.fire({
+                                        position: 'top',
+                                        type: 'error',
+                                        title: data.responseJSON,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    })
                                 }
                             });
                             // End of AJAX
@@ -403,26 +412,26 @@
             total_item += Number(item.quantity);
 
             html += `<tr>
-                                    <td>${no++}</td>
-                                    <td>${item.associatedModel.barcode}</td>
-                                    <td>${item.name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>${item.price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</td>
-                                    <td>${subtotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</td>
-                                    <td>
-                                    <a href="javascript:void(null)" data-rowid="${item.id}"
-                                        class="remove-cart btn-sm btn-danger"><i class="nav-icon fas fa-trash"></i>
-                                    </td>
-                                </tr>`;
+                        <td>${no++}</td>
+                        <td>${item.associatedModel.barcode}</td>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</td>
+                        <td>${subtotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</td>
+                        <td>
+                            <a href="javascript:void(null)" data-rowid="${item.id}"
+                            class="remove-cart btn-sm btn-danger"><i class="nav-icon fas fa-trash"></i>
+                        </td>
+                    </tr>`;
 
             console.log(html);
         });
 
         html += `<tr>
-                                <th colspan="3"><center><strong>Total</strong></center></th>
-                                <th colspan="2"><strong>${total_item}</strong></th>
-                                <th colspan="2"><strong>${total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</strong></th>
-                            </tr>`;
+                    <th colspan="3"><center><strong>Total</strong></center></th>
+                    <th colspan="2"><strong>${total_item}</strong></th>
+                    <th colspan="2"><strong>${total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</strong></th>
+                </tr>`;
 
         $('#cart-item').html(html);
     }
@@ -431,28 +440,65 @@
         const id = $("input[name='id']").val();
         const qty = $("input[name='jumlah']").val();
         const harga = $("input[name='harga_barang']").val();
-        
-        $.ajax({
-                type: 'POST',
-                url: "{{ route('cart.add') }}",
-                data: {
-                    _token: _token,
-                    id: id,
-                    qty: qty,
-                    harga: harga
-                },
-                dataType: 'json',
-                success: function (data) {
-                    cart_table(data);
-                   
-                    $("input[name='id']").val("");
-                    $("input[name='nama_barang']").val("");
-                    $("input[name='jumlah']").val(null);
-                    $("input[name='harga_barang']").val(null);
-                    $("input[name='total']").val(null);
-                   
-                }
-    	    });
+
+        if(id === '')
+        {
+            Swal.fire({
+                    position: 'top',
+                    type: 'error',
+                    title: 'Pilih Barang',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+        }else if(qty === '')
+        {
+            Swal.fire({
+                    position: 'top',
+                    type: 'error',
+                    title: 'Mohon isi jumlah',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+            $("input[name='jumlah']").focus();
+
+        }else if(harga === '' || harga === '0')
+        {
+            Swal.fire({
+                    position: 'top',
+                    type: 'error',
+                    title: 'Mohon isi harga',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+            $("input[name='harga_barang']").focus();
+
+        }else
+        {   
+            $.ajax({
+                    type: 'POST',
+                    url: "{{ route('cart.add') }}",
+                    data: {
+                        _token: _token,
+                        id: id,
+                        qty: qty,
+                        harga: harga
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        cart_table(data);
+                       
+                        $("input[name='id']").val("");
+                        $("input[name='nama_barang']").val("");
+                        $("input[name='jumlah']").val(null);
+                        $("input[name='harga_barang']").val(null);
+                        $("input[name='total']").val(null);
+                       
+                    }
+            });
+        }
     })
 
     function get_total() {
@@ -486,29 +532,29 @@
     	    });
     })
 
-    $('#barang').on('click', '.barang',function (){
-                const id =  $(this).attr('data-id');
-                $("input[name='jumlah']").focus();
+    $('#barang').on('click', '.barang',function ()
+    {
+        const id =  $(this).attr('data-id');
+        $("input[name='jumlah']").focus();
 
-                $.ajax({
-                    type: 'POST',
-                    url: '/barang/getBarangById',
-                    data: {
-                        _token: _token,
-                        id: id
-                    },
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log(data.length);
-                        $("input[name='id']").val(data.barang_id);
-                        $("input[name='nama_barang']").val(data.nama_barang);
-                        $("input[name='harga_barang']").val(data.harga_beli);
+        $.ajax({
+            type: 'POST',
+            url: '/barang/getBarangById',
+            data: {
+                    _token: _token,
+                    id: id
+                },
+            dataType: 'json',
+                success: function (data) {
+                console.log(data.length);
+                $("input[name='id']").val(data.barang_id);
+                $("input[name='nama_barang']").val(data.nama_barang);
+                $("input[name='harga_barang']").val(data.harga_beli);
 
-                        $('#modal-barang').modal('hide');
-                    }
-    	        });
-                            
-              });
+                $('#modal-barang').modal('hide');
+            }
+        });                    
+    });
 });
 
 </script>

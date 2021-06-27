@@ -472,38 +472,52 @@
         $('#cart-item').html(html);
     }
 
-    $('#add-to-cart').on('click', function(){
+    $('#add-to-cart').on('click', function()
+    {
         const id = $("input[name='id']").val();
         const qty = $("input[name='jumlah']").val();
         const harga = $("input[name='harga_barang']").val();
         const trans = 'penjualan';
         console.log(trans);
+        console.log(id);
+        console.log(harga);
 
-        if(id === undefined){
+        if(id === '')
+        {
             Swal.fire({
-                                position: 'top',
-                                type: 'error',
-                                title: 'Pilih Barang',
-                                showConfirmButton: false,
-                                timer: 1500
-                        })
-        }else if(qty === undefined){
+                position: 'top',
+                type: 'error',
+            title: 'Pilih Barang',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+        }else if(qty === '')
+        {
             Swal.fire({
-                                position: 'top',
-                                type: 'error',
-                                title: 'Mohon isi jumlah',
-                                showConfirmButton: false,
-                                timer: 1500
-                        })
-        }else if(harga === undefined){
+                position: 'top',
+                type: 'error',
+                title: 'Mohon isi jumlah',
+                showConfirmButton: false,
+                timer: 1500
+            })
+
+            $("input[name='jumlah']").focus();
+
+        }else if(harga === '' || harga === '0')
+        {
             Swal.fire({
-                                position: 'top',
-                                type: 'error',
-                                title: 'Mohon isi harga',
-                                showConfirmButton: false,
-                                timer: 1500
-                        })
-        }else{
+                position: 'top',
+                type: 'error',
+                title: 'Mohon isi harga',
+                showConfirmButton: false,
+                timer: 1500
+            })
+
+            $("input[name='harga_barang']").focus();
+
+        }else
+        {
             $.ajax({
                     type: 'POST',
                     url: "{{ route('cart.add') }}",
@@ -527,12 +541,12 @@
                     },
                     error: function(data){
                         Swal.fire({
-                                    position: 'top',
-                                    type: 'error',
-                                    title: 'Stok tidak mencukupi',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                            })
+                            position: 'top',
+                            type: 'error',
+                            title: data.responseJSON,
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
                     }
                 });
         }
@@ -685,17 +699,26 @@
                                 url: '/penjualan',
                                 data: $('#form-penjualan').serialize(),
                                 dataType: 'json',
-                                success: function (output) {
+                                success: function (data) {
                                     Swal.fire({
                                         position: 'top',
                                         type: 'success',
-                                        title: output.message,
+                                        title: data,
                                         showConfirmButton: false,
                                         timer: 1500
                                     })
                                     window.setTimeout(function () {
                                         location.reload();
                                     }, 1070);
+                                },
+                                error: function(data){
+                                    Swal.fire({
+                                        position: 'top',
+                                        type: 'error',
+                                        title: data.responseJSON,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    })
                                 }
                             });
                             // End of AJAX

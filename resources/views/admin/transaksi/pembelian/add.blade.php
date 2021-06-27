@@ -544,28 +544,66 @@
         const id = $("input[name='id']").val();
         const qty = $("input[name='jumlah']").val();
         const harga = $("input[name='harga_barang']").val();
+
+        if(id === '')
+        {
+            Swal.fire({
+                    position: 'top',
+                    type: 'error',
+                    title: 'Pilih Barang',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+        }else if(qty === '')
+        {
+            Swal.fire({
+                    position: 'top',
+                    type: 'error',
+                    title: 'Mohon isi jumlah',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+            $("input[name='jumlah']").focus();
+
+        }else if(harga === '' || harga === '0')
+        {
+            Swal.fire({
+                    position: 'top',
+                    type: 'error',
+                    title: 'Mohon isi harga',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
+            $("input[name='harga_barang']").focus();
+
+        }else
+        {
+            $.ajax({
+                    type: 'POST',
+                    url: "{{ route('cart.add') }}",
+                    data: {
+                        _token: _token,
+                        id: id,
+                        qty: qty,
+                        harga: harga
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        cart_table(data);
+                       
+                        $("input[name='id']").val("");
+                        $("input[name='nama_barang']").val("");
+                        $("input[name='jumlah']").val(null);
+                        $("input[name='harga_barang']").val(null);
+                        $("input[name='total']").val(null);
+                       
+                    }
+                });
+        }
         
-        $.ajax({
-                type: 'POST',
-                url: "{{ route('cart.add') }}",
-                data: {
-                    _token: _token,
-                    id: id,
-                    qty: qty,
-                    harga: harga
-                },
-                dataType: 'json',
-                success: function (data) {
-                    cart_table(data);
-                   
-                    $("input[name='id']").val("");
-                    $("input[name='nama_barang']").val("");
-                    $("input[name='jumlah']").val(null);
-                    $("input[name='harga_barang']").val(null);
-                    $("input[name='total']").val(null);
-                   
-                }
-    	    });
     })
 
     function get_total() {
@@ -714,17 +752,27 @@
                                 url: '/pembelian',
                                 data: $('#form-pembelian').serialize(),
                                 dataType: 'json',
-                                success: function (output) {
+                                success: function (data) {
+                                    console.log(data);
                                     Swal.fire({
                                         position: 'top',
                                         type: 'success',
-                                        title: output.message,
+                                        title: data,
                                         showConfirmButton: false,
                                         timer: 1500
                                     })
                                     window.setTimeout(function () {
                                         location.reload();
                                     }, 1070);
+                                },
+                                error: function(data){
+                                    Swal.fire({
+                                        position: 'top',
+                                        type: 'error',
+                                        title: data.responseJSON,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    })
                                 }
                             });
                             // End of AJAX

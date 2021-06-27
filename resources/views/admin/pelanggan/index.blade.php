@@ -1,4 +1,5 @@
 @extends('admin.main')
+@section('Master', 'menu-open')
 @section('Pelanggan', 'active')
 @section('content')
 <!-- Content Wrapper. Contains page content -->

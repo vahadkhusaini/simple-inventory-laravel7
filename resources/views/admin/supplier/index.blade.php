@@ -1,4 +1,5 @@
 @extends('admin.main')
+@section('Master', 'menu-open')
 @section('Supplier', 'active')
 @section('content')
 <!-- Content Wrapper. Contains page content -->

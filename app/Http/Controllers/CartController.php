@@ -24,10 +24,16 @@ class CartController extends Controller
         if($request->trans == 'penjualan'){
             if($request->qty > $barang->stok)
             {
-                return Response::json([
-                    'success' => 'false',
-                    'errors' => 'Stok tidak mencukupi'
-                ], 404);
+                return Response::json(
+                    'Stok tidak mencukupi'
+                , 404);
+            }
+
+            if($request->harga < $barang->harga_beli)
+            {
+                return Response::json(
+                    'Harga jual kurang dari harga beli !'
+                , 404);
             }
 
             return $this->store($request, $barang);

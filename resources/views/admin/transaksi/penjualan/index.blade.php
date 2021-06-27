@@ -1,4 +1,5 @@
 @extends('admin.main')
+@section('Transaksi', 'menu-open')
 @section('Penjualan', 'active')
 @section('content')
 <!-- Content Wrapper. Contains page content -->
