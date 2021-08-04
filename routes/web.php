@@ -22,6 +22,10 @@ Route::post('/register','AuthController@postRegister')->name('post.register');
 Route::group(['middleware' => 'auth'], function(){
     Route::get('dashboard','DashboardController@index')->name('dashboard');
     Route::get('logout','AuthController@logout')->name('logout');
+    Route::post('editProfile','AuthController@editProfile');
+    Route::post('changePassword','AuthController@changePassword');
+
+
     Route::resource('pelanggan', 'PelangganController');
     Route::resource('supplier', 'SupplierController');
     Route::resource('barang', 'BarangController');

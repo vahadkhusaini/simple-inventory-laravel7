@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 Use Validator;
 use App\User;
+use Response;
+use Hash;
 
 class AuthController extends Controller
 {
@@ -73,6 +75,41 @@ class AuthController extends Controller
         ]);
 
         return redirect('login')->with('sukses', 'Register berhasil, silahkan login');
+    }
+
+    public function editProfile(Request $request)
+    {
+        $id = auth()->user()->id;
+        $user = User::where('id', $id)
+                ->update(['name' => $request->username]);
+        
+        $output = [
+            'message' => 'Username Berhasil diperbaharui'
+        ];
+
+        return Response::json($output);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $id = auth()->user()->id;
+        $user = User::find($id);
+        $new_password = bcrypt($request->newpass);
+
+        if (Hash::check($request->oldpass, $user->password)) {
+            User::where('id', $id)
+            ->update(['password' => $new_password]);
+            Auth::logout();
+        
+            return Response::json(
+                'Password berhasil diperbarui, silahkan login kembali'
+            );
+        } else {
+            return Response::json(
+                'Password lama tidak cocok!'
+            , 500);
+        }
+
     }
 
     public function logout()
