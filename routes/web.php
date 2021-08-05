@@ -38,6 +38,8 @@ Route::group(['middleware' => 'auth'], function(){
     Route::resource('pembelian', 'PembelianController');
     Route::get('/cetak_invoice_pdf/{id}','PembelianController@cetak_invoice_pdf');
     Route::get('/cetak_laporan_pembelian/{tgl1}/{tgl2}/{supplier_id}','PembelianController@cetak_laporan_pdf');
+    Route::get('/get_pemesanan','PembelianController@getPemesanan')->name('pesanan.getPesanan');
+
 
     Route::resource('penjualan', 'PenjualanController');
     Route::get('/cetak_invoice_pdf/{id}','PenjualanController@cetak_invoice_pdf');

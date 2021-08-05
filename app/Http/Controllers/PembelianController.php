@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use \App\Pembelian;
+use \App\Pesanan;
 use \App\Barang;
 use \App\PembelianDetail;
 use \App\KartuStok;
@@ -29,8 +30,11 @@ class PembelianController extends Controller
 
             $supplier_id = $request->get('supplier_id');
 
-            $query = DB::table('pembelian')
-                    ->whereMonth('tanggal', $month);
+            $query = DB::table('pembelian');
+
+            if(!$request->get('from')){
+                $query->whereMonth('tanggal', $month);
+            }
 
             if($request->get('from')){
                 $query->whereBetween('tanggal', 
@@ -89,7 +93,7 @@ class PembelianController extends Controller
      */
     public function store(Request $request)
     {
-        $pembelian_id = auto_id_trx('pembelian','id','PB');
+        $pembelian_id = 'PB'.date('YmdHis');
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
@@ -142,12 +146,15 @@ class PembelianController extends Controller
                     'barang_id' => $barang_id,
                     'masuk' => $qty,
                     'keluar' => 0,
-                    'harga' => $cart->prce,
+                    'harga' => $cart->price,
                 ]);
             }
             
             // clear cart session for future cart
             Cart::session($userId)->clear();
+
+            Pesanan::where('id', $request->pesanan_id)
+            ->update(['status' => '1']);
             
             DB::commit();
 
@@ -159,7 +166,7 @@ class PembelianController extends Controller
         {
             DB::rollback();
             return Response::json(
-                'Data Gagal Disimpan'
+                'Data Gagal Disimpan '.$e
             , 500);
         }
         
@@ -228,6 +235,38 @@ class PembelianController extends Controller
             return Response::json($data);
             
         }
+    }
+
+    public function getPemesanan(Request $request)
+    {
+        if ($request->ajax()) {
+
+            $query = DB::table('pesanan')
+                    ->where('status', '0');
+
+            $orders = $query->join('supplier', 'pesanan.supplier_id', '=', 'supplier.id')
+            ->join('pesanan_detail', 'pesanan.id', '=', 'pesanan_detail.pesanan_id')
+            ->select('pesanan.*', 'supplier.nama_supplier', 'pesanan_detail.*',
+              DB::raw('SUM( harga_beli * satuan_beli ) as total')) 
+            ->groupBy('pesanan_detail.pesanan_id')->get(); 
+
+            return \DataTables::of($orders)
+                    ->editColumn('tanggal', function($row){
+                        return date('d-m-Y', strtotime($row->tanggal));
+                    })
+                    ->editColumn('total', function($row){
+                        return number_format($row->total);
+                    })
+                    ->addColumn('action', function($row){
+
+                        $btn = '
+                        <button data-id="'.$row->pesanan_id.'" class="print btn btn-primary btn-sm"><i class="nav-icon fas fa-print"></i></button>';
+
+                        return $btn;
+                    })
+                    ->rawColumns(['action', 'tanggal','total'])
+                    ->toJson();
+        }  
     }
 
     public function cetak_laporan_pdf(Request $request)

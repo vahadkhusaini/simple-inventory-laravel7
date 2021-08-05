@@ -74,6 +74,9 @@
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script> --}}
     <!-- AdminLTE App -->
     <script src="{{ asset('admin/dist/js/adminlte.js') }}"></script>
+    <!-- ChartJS -->
+    <script src="{{ asset('admin/plugins/chart.js/Chart.min.js') }}"></script>
+
     @stack('child-js')
 </body>
 

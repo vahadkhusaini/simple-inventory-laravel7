@@ -89,7 +89,7 @@ class PesananController extends Controller
      */
     public function store(Request $request)
     {
-        $pesanan_id = auto_id_trx('pesanan','id','PO');
+        $pesanan_id = 'PO'.date('YmdHis');
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
@@ -125,6 +125,7 @@ class PesananController extends Controller
         }catch (\Exception $e)
         {
             DB::rollback();
+
             return Response::json(
                 'Data Gagal Disimpan'
             , 500);
@@ -235,8 +236,11 @@ class PesananController extends Controller
 
         $supplier_id = $request->segment(4);
 
-        $query = DB::table('pesanan')
-                ->whereMonth('tanggal', $month);
+        $query = DB::table('pesanan');
+
+        if(!$request->get('from')){
+            $query->whereMonth('tanggal', $month);
+        }
 
         if($from && $of){
             $query->whereBetween('tanggal', 

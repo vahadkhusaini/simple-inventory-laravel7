@@ -29,8 +29,11 @@ class PenjualanController extends Controller
 
             $pelanggan_id = $request->get('pelanggan_id');
 
-            $query = DB::table('penjualan')
-                    ->whereMonth('tanggal', $month);
+            $query = DB::table('penjualan');
+
+            if(!$request->get('from')){
+                $query->whereMonth('tanggal', $month);
+            }
 
             if($request->get('from')){
                 $query->whereBetween('tanggal', 
@@ -89,7 +92,7 @@ class PenjualanController extends Controller
      */
     public function store(Request $request)
     {
-        $penjualan_id = auto_id_trx('penjualan','id','PJ');
+        $penjualan_id = 'TRX'.date('YmdHis');
         $tanggal = date('Y-m-d', strtotime($request->tanggal));
         $userId = auth()->user()->id; 
 
@@ -144,7 +147,6 @@ class PenjualanController extends Controller
                 'Data Gagal Disimpan'
             , 500);
         }
-        
 
     }
 

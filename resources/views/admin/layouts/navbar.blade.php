@@ -159,7 +159,7 @@
                                         showConfirmButton: false,
                                         timer: 1500
                                     })
-                                    
+
                                     document.location.href = '/logout';
                                 },
                                 error: function(data){
@@ -213,7 +213,7 @@
                                 type: 'success',
                                 title: output.message,
                                 showConfirmButton: false,
-                                timer: 1500
+                                timer: 1060
                             })
                         window.setTimeout(function () {
                             location.reload();

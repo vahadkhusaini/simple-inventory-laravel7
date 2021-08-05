@@ -21,8 +21,11 @@ class KartuStokController extends Controller
             $of = date('Y-m-d', strtotime($request->get('of')));
             $month = date('m');
 
-            $query = DB::table('kartu_stok')
-                    ->whereMonth('tanggal', $month);
+            $query = DB::table('kartu_stok');
+            
+            if(!$request->get('from')){
+                $query->whereMonth('tanggal', $month);
+            }
 
             if($request->get('from')){
                 $query->whereBetween('tanggal', 

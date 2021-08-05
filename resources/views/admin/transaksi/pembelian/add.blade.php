@@ -481,7 +481,7 @@
 					 .addClass('pesanan')
 					 .attr('data-id', data.pesanan_id)
 				},
-                ajax: "{{ route('pesanan.index') }}",
+                ajax: "{{ route('pesanan.getPesanan') }}",
                 columns: [
                     {
                         data: 'tanggal',
