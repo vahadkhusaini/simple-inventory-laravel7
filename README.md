@@ -15,5 +15,6 @@ Aplikasi web pertama yang saya dari awal dengan laravel 7
 
 ## DEMO
 https://inventory.whatsmyserver.com
-username = testing@email.com
-password = testing
+
+- username = testing@email.com
+- password = testing
