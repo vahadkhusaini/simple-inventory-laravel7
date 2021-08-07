@@ -190,7 +190,7 @@
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Cetak',
                 preConfirm: (yes) => {
-                    window.location = "/cetak_invoice_pdf/"+id;
+                    window.location = "/cetak_pemesanan_pdf/"+id;
                     target = "_blank";
                 },
             })
